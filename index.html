@@ -9,7 +9,7 @@
     body {
         font-family: Arial, sans-serif;
         margin: 20px;
-        background: none;             
+        background: none;
         -webkit-text-size-adjust: 100%;
     }
 
@@ -34,11 +34,12 @@
         overflow-y: auto;
     }
 
-    /* FIXED: remove blue boundary when selected */
+    /* FINAL FIX: remove blue highlight ring on iPhone */
     .input-box:focus {
         outline: none;
         border: 1px solid #ccc;
         box-shadow: none;
+        -webkit-tap-highlight-color: transparent;
     }
 
     .run-button {
