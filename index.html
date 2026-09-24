@@ -13,10 +13,24 @@
         -webkit-text-size-adjust: 100%;
     }
 
+    /* HEADER FIXES */
+    .mf-header {
+        display: flex;
+        flex-direction: column;      /* stack logo above title */
+        align-items: flex-start;     /* left-align both */
+        margin-bottom: 12px;
+    }
+
+    .mf-logo {
+        height: 32px;                /* smaller logo */
+        width: auto;
+        margin-bottom: 4px;          /* small gap before title */
+    }
+
     h1 {
-        margin: 0 0 12px 0;
+        margin: 0;
         text-align: left;
-        font-size: 24px;
+        font-size: 24px;             /* larger title */
         font-weight: 600;
     }
 
@@ -34,7 +48,6 @@
         overflow-y: auto;
     }
 
-    /* FINAL FIX: remove blue highlight ring on iPhone */
     .input-box:focus {
         outline: none;
         border: 1px solid #ccc;
@@ -85,7 +98,10 @@ function runAutoWriter() {
 </head>
 <body>
 
-<h1>AutoWriter</h1>
+<div class="mf-header">
+    <img src="IMG_1741.jpeg" class="mf-logo">
+    <h1>AutoWriter</h1>
+</div>
 
 <textarea id="input" class="input-box"></textarea>
 
