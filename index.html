@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -34,12 +35,13 @@ h1 {
     text-align: left;
     font-size: 24px;
     font-weight: 600;
+    line-height: 1.2;
 }
 
 .tagline {
     font-size: 14px;
     color: #666;
-    margin-top: 2px;
+    margin-top: 8px;  /* half-line spacing */
     margin-bottom: 12px;
 }
 
@@ -77,8 +79,9 @@ h1 {
 }
 
 .run-button,
-.copy-button {
-    background: #000;
+.copy-button,
+.buy-button {
+    background: #007bff;
     color: #fff;
     border: none;
     border-radius: 6px;
@@ -89,12 +92,14 @@ h1 {
 }
 
 .clear-button {
-    background: transparent;
+    background: #000;
+    color: #fff;
     border: none;
-    color: #666;
-    font-size: 13px;
+    border-radius: 6px;
+    padding: 8px 14px;
+    font-size: 14px;
+    font-weight: 600;
     cursor: pointer;
-    padding: 8px 4px;
 }
 
 /* Output */
@@ -125,15 +130,10 @@ h1 {
     z-index: 999;
 }
 
-.buy-button {
-    background: #000;
-    color: #fff;
-    border: none;
-    border-radius: 6px;
-    padding: 8px 14px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
+/* Hide footer while keyboard/input is active */
+
+body.keyboard-open .mf-footer {
+    display: none;
 }
 </style>
 
@@ -162,6 +162,18 @@ function clearAll() {
     document.getElementById("input").value = "";
     document.getElementById("output").textContent = "";
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+    const input = document.getElementById("input");
+
+    input.addEventListener("focus", () => {
+        document.body.classList.add("keyboard-open");
+    });
+
+    input.addEventListener("blur", () => {
+        document.body.classList.remove("keyboard-open");
+    });
+});
 </script>
 
 </head>
@@ -169,7 +181,9 @@ function clearAll() {
 
 <div class="mf-header">
     IMG_1741.jpeg
+
     <h1>AutoWriter</h1>
+
     <div class="tagline">
         Turn rough ideas into ready-to-use content.
     </div>
