@@ -1,21 +1,22 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1">
+
 <title>AutoWriter</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@huggingface/hf@latest/dist/hf.js">\</script>
 
 <style>
 body {
     font-family: Arial, sans-serif;
     margin: 20px;
     padding-bottom: 90px;
-    background: #ffffff;
+    background: #fff;
     -webkit-text-size-adjust: 100%;
 }
-
-/* Header */
 
 .mf-header {
     display: flex;
@@ -32,48 +33,31 @@ body {
 
 h1 {
     margin: 0;
-    text-align: left;
     font-size: 24px;
     font-weight: 600;
-    line-height: 1.2;
 }
 
 .tagline {
     font-size: 14px;
     color: #666;
-    margin-top: 8px;  /* half-line spacing */
+    margin-top: 8px;
     margin-bottom: 12px;
 }
-
-/* Input */
 
 .input-box {
     width: 100%;
     height: 140px;
-    max-height: 140px;
-    background: #ffffff;
     border: 1px solid #ccc;
     border-radius: 6px;
     padding: 10px;
     box-sizing: border-box;
-    margin-bottom: 12px;
-    font-size: 17px;
+    font-size: 16px;
     resize: none;
-    overflow-y: auto;
+    margin-bottom: 12px;
 }
-
-.input-box:focus {
-    outline: none;
-    border: 1px solid #ccc;
-    box-shadow: none;
-    -webkit-tap-highlight-color: transparent;
-}
-
-/* Buttons */
 
 .button-row {
     display: flex;
-    align-items: center;
     gap: 8px;
     margin-bottom: 12px;
 }
@@ -102,8 +86,6 @@ h1 {
     cursor: pointer;
 }
 
-/* Output */
-
 .output-box {
     width: 100%;
     min-height: 140px;
@@ -113,70 +95,25 @@ h1 {
     padding: 10px;
     box-sizing: border-box;
     white-space: pre-wrap;
-    font-size: 16px;
 }
-
-/* Footer */
 
 .mf-footer {
     position: fixed;
     left: 0;
     right: 0;
     bottom: 0;
-    background: #ffffff;
+    background: white;
     border-top: 1px solid #ddd;
     padding: 12px;
     text-align: center;
-    z-index: 999;
 }
-
-/* Hide footer while keyboard/input is active */
 
 body.keyboard-open .mf-footer {
     display: none;
 }
 </style>
-
-<script>
-function runAutoWriter() {
-    const input = document.getElementById("input").value.trim();
-    const output = document.getElementById("output");
-
-    if (!input) {
-        output.textContent = "Please enter text.";
-        return;
-    }
-
-    output.textContent = "AutoWriter output:\n\n" + input;
-}
-
-function copyOutput() {
-    const text = document.getElementById("output").textContent;
-
-    if (!text.trim()) return;
-
-    navigator.clipboard.writeText(text);
-}
-
-function clearAll() {
-    document.getElementById("input").value = "";
-    document.getElementById("output").textContent = "";
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-    const input = document.getElementById("input");
-
-    input.addEventListener("focus", () => {
-        document.body.classList.add("keyboard-open");
-    });
-
-    input.addEventListener("blur", () => {
-        document.body.classList.remove("keyboard-open");
-    });
-});
-</script>
-
 </head>
+
 <body>
 
 <div class="mf-header">
@@ -204,8 +141,136 @@ document.addEventListener("DOMContentLoaded", () => {
 <div id="output" class="output-box"></div>
 
 <div class="mf-footer">
-    <button class="buy-button">Buy This Tool</button>
+    <button class="buy-button">
+        Buy This Tool
+    </button>
 </div>
+
+<script>
+
+let client = null;
+
+/* ASK FOR KEY */
+
+window.addEventListener("load", async () => {
+
+    const apiKey = prompt(
+        "Enter your AI API key for testing"
+    );
+
+    if (!apiKey) {
+        document.getElementById("output").textContent =
+            "No API key entered.";
+        return;
+    }
+
+    try {
+
+        client = new Hf({
+            apiKey: apiKey
+        });
+
+        console.log("Client initialized");
+
+    } catch (err) {
+
+        document.getElementById("output").textContent =
+            "Client initialization failed: " +
+            (err.message || err);
+
+    }
+});
+
+/* FOOTER HIDE */
+
+const inputBox = document.getElementById("input");
+
+inputBox.addEventListener("focus", () => {
+    document.body.classList.add("keyboard-open");
+});
+
+inputBox.addEventListener("blur", () => {
+    document.body.classList.remove("keyboard-open");
+});
+
+/* RUN */
+
+async function runAutoWriter() {
+
+    const input = document.getElementById("input").value.trim();
+    const output = document.getElementById("output");
+
+    if (!input) {
+        output.textContent = "Please enter text.";
+        return;
+    }
+
+    if (!client) {
+        output.textContent = "AI client not initialized.";
+        return;
+    }
+
+    output.textContent = "Writing...";
+
+    try {
+
+        const stream = await client.responses.stream({
+            model: "gpt-4.1-mini",
+            messages: [
+                {
+                    role: "system",
+                    content:
+                    "Rewrite and expand the user's rough idea into polished, ready-to-use content. Never simply repeat the original text."
+                },
+                {
+                    role: "user",
+                    content: input
+                }
+            ]
+        });
+
+        output.textContent = "";
+
+        for await (const chunk of stream) {
+
+            if (chunk.type === "response.output_text.delta") {
+                output.textContent += chunk.delta;
+            }
+
+        }
+
+    } catch (err) {
+
+        output.textContent =
+            "ERROR:\n\n" +
+            (err.message || JSON.stringify(err));
+
+        console.error(err);
+
+    }
+}
+
+/* COPY */
+
+function copyOutput() {
+
+    const text =
+        document.getElementById("output").textContent;
+
+    if (!text.trim()) return;
+
+    navigator.clipboard.writeText(text);
+}
+
+/* CLEAR */
+
+function clearAll() {
+
+    document.getElementById("input").value = "";
+    document.getElementById("output").textContent = "";
+}
+
+</script>
 
 </body>
 </html>
