@@ -2,19 +2,16 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport"
-      content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
-<title>AutoWriter</title>
-
-<script src="https://cdn.jsdelivr.net/npm/@huggingface/hf@latest/dist/hf.js">\</script>
+<title>AutoWriter Diagnostic</title>
 
 <style>
 body {
     font-family: Arial, sans-serif;
     margin: 20px;
     padding-bottom: 90px;
-    background: #fff;
+    background: #ffffff;
     -webkit-text-size-adjust: 100%;
 }
 
@@ -35,24 +32,13 @@ h1 {
     margin: 0;
     font-size: 24px;
     font-weight: 600;
+    line-height: 1.2;
 }
 
 .tagline {
     font-size: 14px;
     color: #666;
     margin-top: 8px;
-    margin-bottom: 12px;
-}
-
-.input-box {
-    width: 100%;
-    height: 140px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    padding: 10px;
-    box-sizing: border-box;
-    font-size: 16px;
-    resize: none;
     margin-bottom: 12px;
 }
 
@@ -88,13 +74,14 @@ h1 {
 
 .output-box {
     width: 100%;
-    min-height: 140px;
+    min-height: 250px;
     background: #f7f7f7;
     border: 1px solid #ccc;
     border-radius: 6px;
     padding: 10px;
     box-sizing: border-box;
     white-space: pre-wrap;
+    overflow-wrap: break-word;
 }
 
 .mf-footer {
@@ -102,7 +89,7 @@ h1 {
     left: 0;
     right: 0;
     bottom: 0;
-    background: white;
+    background: #ffffff;
     border-top: 1px solid #ddd;
     padding: 12px;
     text-align: center;
@@ -119,26 +106,30 @@ body.keyboard-open .mf-footer {
 <div class="mf-header">
     IMG_1741.jpeg
 
-    <h1>AutoWriter</h1>
+    <h1>AutoWriter Diagnostic</h1>
 
     <div class="tagline">
-        Turn rough ideas into ready-to-use content.
+        Diagnose AI connectivity and library loading.
     </div>
 </div>
 
-<textarea
-    id="input"
-    class="input-box"
-    placeholder="Enter ideas, notes, or rough text..."
-></textarea>
-
 <div class="button-row">
-    <button class="run-button" onclick="runAutoWriter()">Run</button>
-    <button class="copy-button" onclick="copyOutput()">Copy</button>
-    <button class="clear-button" onclick="clearAll()">Clear</button>
+    <button class="run-button" onclick="runDiagnostics()">
+        Run Diagnostic
+    </button>
+
+    <button class="copy-button" onclick="copyOutput()">
+        Copy
+    </button>
+
+    <button class="clear-button" onclick="clearOutput()">
+        Clear
+    </button>
 </div>
 
-<div id="output" class="output-box"></div>
+<div id="output" class="output-box">
+Press Run Diagnostic.
+</div>
 
 <div class="mf-footer">
     <button class="buy-button">
@@ -147,129 +138,83 @@ body.keyboard-open .mf-footer {
 </div>
 
 <script>
-
-let client = null;
-
-/* ASK FOR KEY */
-
-window.addEventListener("load", async () => {
-
-    const apiKey = prompt(
-        "Enter your AI API key for testing"
+function copyOutput() {
+    navigator.clipboard.writeText(
+        document.getElementById("output").textContent
     );
+}
 
-    if (!apiKey) {
-        document.getElementById("output").textContent =
-            "No API key entered.";
-        return;
-    }
+function clearOutput() {
+    document.getElementById("output").textContent =
+        "Press Run Diagnostic.";
+}
 
-    try {
+async function runDiagnostics() {
 
-        client = new Hf({
-            apiKey: apiKey
-        });
-
-        console.log("Client initialized");
-
-    } catch (err) {
-
-        document.getElementById("output").textContent =
-            "Client initialization failed: " +
-            (err.message || err);
-
-    }
-});
-
-/* FOOTER HIDE */
-
-const inputBox = document.getElementById("input");
-
-inputBox.addEventListener("focus", () => {
-    document.body.classList.add("keyboard-open");
-});
-
-inputBox.addEventListener("blur", () => {
-    document.body.classList.remove("keyboard-open");
-});
-
-/* RUN */
-
-async function runAutoWriter() {
-
-    const input = document.getElementById("input").value.trim();
     const output = document.getElementById("output");
 
-    if (!input) {
-        output.textContent = "Please enter text.";
-        return;
+    let report = "";
+
+    report += "AUTOWRITER DIAGNOSTIC REPORT\n";
+    report += "===========================\n\n";
+
+    report += "Window Checks\n";
+    report += "-------------\n";
+
+    report += "typeof Hf: ";
+    report += typeof window.Hf;
+    report += "\n";
+
+    report += "typeof HfInference: ";
+    report += typeof window.HfInference;
+    report += "\n";
+
+    report += "typeof InferenceClient: ";
+    report += typeof window.InferenceClient;
+    report += "\n\n";
+
+    report += "HF-Related Globals\n";
+    report += "------------------\n";
+
+    const matches = Object.keys(window)
+        .filter(k =>
+            k.toLowerCase().includes("hf") ||
+            k.toLowerCase().includes("hug") ||
+            k.toLowerCase().includes("infer")
+        );
+
+    if (matches.length === 0) {
+        report += "No HF-related globals detected.\n";
+    } else {
+        matches.forEach(name => {
+            report += name + "\n";
+        });
     }
 
-    if (!client) {
-        output.textContent = "AI client not initialized.";
-        return;
-    }
+    report += "\n";
 
-    output.textContent = "Writing...";
+    report += "CDN Test\n";
+    report += "--------\n";
 
     try {
 
-        const stream = await client.responses.stream({
-            model: "gpt-4.1-mini",
-            messages: [
-                {
-                    role: "system",
-                    content:
-                    "Rewrite and expand the user's rough idea into polished, ready-to-use content. Never simply repeat the original text."
-                },
-                {
-                    role: "user",
-                    content: input
-                }
-            ]
-        });
+        const response = await fetch(
+            "https://cdn.jsdelivr.net/npm/@huggingface/hf@latest/dist/hf.js"
+        );
 
-        output.textContent = "";
-
-        for await (const chunk of stream) {
-
-            if (chunk.type === "response.output_text.delta") {
-                output.textContent += chunk.delta;
-            }
-
-        }
+        report += "Old HF package status: ";
+        report += response.status;
+        report += "\n";
 
     } catch (err) {
 
-        output.textContent =
-            "ERROR:\n\n" +
-            (err.message || JSON.stringify(err));
-
-        console.error(err);
-
+        report += "Old HF package fetch failed:\n";
+        report += err.message;
+        report += "\n";
     }
+
+    output.textContent = report;
 }
-
-/* COPY */
-
-function copyOutput() {
-
-    const text =
-        document.getElementById("output").textContent;
-
-    if (!text.trim()) return;
-
-    navigator.clipboard.writeText(text);
-}
-
-/* CLEAR */
-
-function clearAll() {
-
-    document.getElementById("input").value = "";
-    document.getElementById("output").textContent = "";
-}
-
 </script>
 
 </body>
