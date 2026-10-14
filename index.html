@@ -3,11 +3,13 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="viewport"
+      content="width=device-width,initial-scale=1,maximum-scale=1">
 
 <title>AutoWriter</title>
 
 <style>
+
 body{
     font-family:Arial,sans-serif;
     margin:20px;
@@ -33,8 +35,6 @@ h1{
     margin:0;
     font-size:24px;
     font-weight:600;
-    line-height:1.2;
-    text-align:left;
 }
 
 .tagline{
@@ -47,16 +47,13 @@ h1{
 .input-box{
     width:100%;
     height:140px;
-    max-height:140px;
-    background:#ffffff;
     border:1px solid #ccc;
     border-radius:6px;
     padding:10px;
     box-sizing:border-box;
-    margin-bottom:12px;
     font-size:17px;
-    overflow-y:auto;
     resize:none;
+    margin-bottom:12px;
 }
 
 .input-box:focus{
@@ -92,8 +89,8 @@ h1{
 }
 
 .clear-button{
-    background:#000000;
-    color:#ffffff;
+    background:#000;
+    color:#fff;
 }
 
 .output-box{
@@ -103,10 +100,9 @@ h1{
     border:1px solid #ccc;
     border-radius:6px;
     padding:10px;
-    box-sizing:border-box;
     white-space:pre-wrap;
     overflow-wrap:break-word;
-    font-size:16px;
+    box-sizing:border-box;
 }
 
 .mf-footer{
@@ -114,7 +110,7 @@ h1{
     left:0;
     right:0;
     bottom:0;
-    background:#ffffff;
+    background:#fff;
     border-top:1px solid #ddd;
     padding:12px;
     text-align:center;
@@ -123,6 +119,7 @@ h1{
 body.keyboard-open .mf-footer{
     display:none;
 }
+
 </style>
 </head>
 
@@ -132,7 +129,7 @@ body.keyboard-open .mf-footer{
 
     <img
         src="IMG_1741.jpeg"
-        alt="MicroFoundary Logo"
+        alt="MicroFoundary"
         class="mf-logo">
 
     <h1>AutoWriter</h1>
@@ -185,19 +182,22 @@ Ready.
 </div>
 
 <script>
-const HF_API_KEY = "PASTE_YOUR_HUGGING_FACE_KEY_HERE";
 
 async function runAutoWriter(){
 
     const input =
-        document.getElementById("input").value.trim();
+        document.getElementById("input")
+        .value
+        .trim();
 
     const output =
         document.getElementById("output");
 
     if(!input){
+
         output.textContent =
             "Please enter a prompt.";
+
         return;
     }
 
@@ -208,24 +208,17 @@ async function runAutoWriter(){
 
         const response =
             await fetch(
-                "https://router.huggingface.co/v1/chat/completions",
+                "/api/generate",
                 {
                     method:"POST",
+
                     headers:{
-                        "Authorization":
-                            `Bearer ${HF_API_KEY}`,
                         "Content-Type":
                             "application/json"
                     },
+
                     body:JSON.stringify({
-                        model:
-                            "deepseek-ai/DeepSeek-V4.1-Flash",
-                        messages:[
-                            {
-                                role:"user",
-                                content:input
-                            }
-                        ]
+                        prompt:input
                     })
                 }
             );
@@ -236,7 +229,6 @@ async function runAutoWriter(){
         if(!response.ok){
 
             output.textContent =
-                "Error:\n\n" +
                 JSON.stringify(
                     data,
                     null,
@@ -247,15 +239,16 @@ async function runAutoWriter(){
         }
 
         output.textContent =
-            data?.choices?.[0]?.message?.content ||
+            data?.choices?.[0]
+                ?.message?.content
+            ||
             "No content returned.";
 
     }
     catch(error){
 
         output.textContent =
-            "Error:\n\n" +
-            error.message;
+            "Error: " + error.message;
     }
 }
 
@@ -304,6 +297,7 @@ window.addEventListener(
         },100);
     }
 );
+
 </script>
 
 </body>
